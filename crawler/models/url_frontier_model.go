@@ -1,0 +1,7 @@
+package models
+
+const (
+	URL_FRONTIER_STATUS_NEW     = 0
+	URL_FRONTIER_STATUS_CRAWLED = 1
+	URL_FRONTIER_STATUS_ERROR   = 2
+)

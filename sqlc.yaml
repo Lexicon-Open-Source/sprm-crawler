@@ -1,0 +1,34 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./schema/query.sql"
+    schema: "./schema/init.sql"
+    gen:
+      go:
+        package: "repository"
+        out: "repository"
+        sql_package: "pgx/v5"
+        emit_pointers_for_null_types: true
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "timestamptz"
+            go_type:
+              import: "time"
+              type: "Time"
+          - db_type: "inet"
+            go_type:
+              import: "net"
+              type: "IP"
+          - column: "url_frontiers.metadata"
+            go_type:
+              import: "sprm-crawler/crawler/models"
+              package: "crawlerModel"
+              type: "UrlFrontierMetadata"
+          - column: "extractions.metadata"
+            go_type:
+              import: "sprm-crawler/scraper/models"
+              package: "scraperModel"
+              type: "Metadata"
