@@ -22,7 +22,6 @@ var crawlCmd = &cobra.Command{
 	Use:   "crawl",
 	Short: "Crawl a website",
 	Long:  `Crawl a website and store the results in the database. You can specify a single URL or multiple URLs to crawl.`,
-	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		crawler.StartCrawlingUrl()
 	},
