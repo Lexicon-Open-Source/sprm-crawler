@@ -18,7 +18,7 @@ FROM url_frontiers
 WHERE
   crawler = $1
   AND status = $2
-ORDER BY created_at ASC LIMIT $3
+ORDER BY url ASC LIMIT $3
 `
 
 type GetUnscrappedUrlFrontiersParams struct {

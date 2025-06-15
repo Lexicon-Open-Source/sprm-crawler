@@ -79,11 +79,6 @@ func startCrawlingItems(totalPages int) {
 			number = strings.TrimSpace(divs[len(divs)-2])
 		}
 
-		// nationality := ""
-		// if len(divs) >= 3 {
-		// 	nationality = strings.TrimSpace(divs[len(divs)-1])
-		// }
-
 		tables := e.DOM.Find("table.table-custom")
 		if tables.Length() >= 2 {
 			e.DOM.Find("table.table-custom").Eq(1).Find("tbody > tr").Each(func(i int, s *goquery.Selection) {
@@ -147,7 +142,7 @@ func startCrawlingItems(totalPages int) {
 	fmt.Print("Starting to crawl all data", totalPages, "\n\n")
 
 	// Crawl all pages
-	for page := 1; page <= 1; page++ {
+	for page := 1; page <= totalPages; page++ {
 		url := fmt.Sprintf("https://www.sprm.gov.my/index.php?id=21&page_id=96&page=%d&per-page=8", page)
 		err := c.Visit(url)
 		if err != nil {
@@ -155,10 +150,9 @@ func startCrawlingItems(totalPages int) {
 		}
 	}
 
-	// Wait for all requests to complete
 	c.Wait()
 
-	// Save all frontiers to database
+	// Save to database
 	if len(frontiers) > 0 {
 		fmt.Printf("Saving %d URL frontiers to database...\n", len(frontiers))
 		ctx := context.Background()

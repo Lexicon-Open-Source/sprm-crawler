@@ -6,6 +6,7 @@ import (
 	"sprm-crawler/common"
 	"sprm-crawler/crawler"
 	"sprm-crawler/repository"
+	"sprm-crawler/scraper"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -27,12 +28,25 @@ var crawlCmd = &cobra.Command{
 	},
 }
 
+var scrapCmd = &cobra.Command{
+	Use:   "scrap",
+	Short: "Scrap a website",
+	Long:  `Scrap a website and store the results in the database. You can specify a single URL or multiple URLs to crawl.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		err := scraper.StartScraping()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	},
+}
+
 func init() {
 	crawlCmd.Flags().IntP("depth", "d", 1, "crawl depth")
 	crawlCmd.Flags().IntP("concurrent", "c", 5, "number of concurrent workers")
 	crawlCmd.Flags().DurationP("delay", "t", time.Second, "delay between requests")
 
 	rootCmd.AddCommand(crawlCmd)
+	rootCmd.AddCommand(scrapCmd)
 }
 
 func loadEnv() {

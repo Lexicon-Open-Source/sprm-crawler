@@ -33,7 +33,7 @@ FROM url_frontiers
 WHERE
   crawler = $1
   AND status = $2
-ORDER BY created_at ASC LIMIT $3;
+ORDER BY url ASC LIMIT $3;
 
 -- name: UpsertExtraction :batchexec
 INSERT INTO extractions (id, url_frontier_id, site_content, artifact_link, raw_page_link, language, page_hash, metadata, created_at, updated_at)
