@@ -22,7 +22,7 @@ import (
 func StartScraping() error {
 	ctx := context.Background()
 
-	unscraped_urls, err := services.GetUnscrappedUrlFrontiers(ctx, 500)
+	unscraped_urls, err := services.GetUnscrappedUrlFrontiers(ctx, 1000)
 	if err != nil {
 		return err
 	}
@@ -38,8 +38,6 @@ func StartScraping() error {
 	if err != nil {
 		return fmt.Errorf("error scraping URLs: %w", err)
 	}
-
-	fmt.Printf("[INFO] Successfully scraped %d extractions\n", len(extractions))
 
 	err = services.UpdateFrontierStatuses(ctx, lo.Map(unscraped_urls, func(urlFrontier repository.UrlFrontier, _ int) lo.Tuple2[string, int16] {
 		return lo.Tuple2[string, int16]{A: urlFrontier.ID, B: models.URL_FRONTIER_STATUS_CRAWLED}
@@ -90,20 +88,17 @@ func scrapeUrls(urlFrontiers []repository.UrlFrontier) ([]repository.Extraction,
 		var baseUrl string
 		var ids []string
 
-		currentPage := page
-
 		for _, frontier := range urlFrontiers {
-			if strings.Contains(frontier.Url, fmt.Sprintf("page=%d&", currentPage)) {
+			if strings.Contains(frontier.Url, fmt.Sprintf("page=%d&", page)) {
 				urls := strings.Split(frontier.Url, "#")
 				baseUrl = urls[0]
 				ids = append(ids, urls[1])
 			}
 		}
 
-		fmt.Printf("[INFO] Scraping page: %s %d (contains %d items)\n", baseUrl, currentPage, len(ids))
+		fmt.Printf("[INFO] Scraping page: %s %d (contains %d items)\n", baseUrl, page, len(ids))
 
 		c := colly.NewCollector()
-
 		c.Limit(&colly.LimitRule{
 			DomainGlob:  "*",
 			Parallelism: 2,
@@ -126,40 +121,92 @@ func scrapeUrls(urlFrontiers []repository.UrlFrontier) ([]repository.Extraction,
 					return
 				}
 
+				fmt.Println("[INFO] Data Key", page, id, baseUrl, id)
+
 				name := strings.TrimSpace(e.ChildText("div a"))
 				if name == "" {
 					fmt.Println("Warning: Found item without name, data-key:", id)
 					return
 				}
 
-				number := ""
-				divs := e.ChildTexts("div")
-				if len(divs) >= 2 {
-					number = strings.TrimSpace(divs[len(divs)-2])
-				}
-
 				tables := e.DOM.Find("table.table-custom")
 				if tables.Length() >= 2 {
+					e.DOM.Find("table.table-custom").Eq(0).Find("tbody > tr").Each(func(i int, s *goquery.Selection) {
+						key := strings.TrimSpace(s.Find("td").Eq(0).Text())
+						value := strings.TrimSpace(s.Find("td").Eq(1).Text())
+
+						switch key {
+						case "Tertuduh":
+							metadata.Accused = value
+						case "No Pengenalan Diri":
+							metadata.IDNumber = value
+						case "Jantina":
+							metadata.Gender = value
+						case "Warganegara":
+							metadata.Nationality = value
+						case "Negeri":
+							metadata.State = value
+						case "Kategory":
+							metadata.Category = value
+						case "Majikan":
+							metadata.Employer = value
+						case "Jawatan":
+							metadata.Position = value
+						case "Mahkamah":
+							metadata.Court = value
+						case "Hakim":
+							metadata.Judge = value
+						case "Timbalan Pendakwa Raya / Pegawai Pendakwa":
+							metadata.Officer = value
+						case "Peguam Bela":
+							metadata.DefenseAttorney = value
+						case "Sabitan Lampau":
+							metadata.PastConvictions = value
+						case "Tarikh Jatuh Hukuman":
+							metadata.SentencingDate = value
+						case "Rayuan":
+							metadata.Appeal = value
+						}
+					})
+
 					e.DOM.Find("table.table-custom").Eq(1).Find("tbody > tr").Each(func(i int, s *goquery.Selection) {
 						key := strings.TrimSpace(s.Find("td").Eq(0).Text())
 						value := strings.TrimSpace(s.Find("td").Eq(1).Text())
-						if key == "Tarikh Jatuh Hukuman" {
-							metadata.Injunction.StartDate = value
+
+						switch key {
+						case "Tertuduh":
+							metadata.Accused = value
+						case "No Pengenalan Diri":
+							metadata.IDNumber = value
+						case "Jantina":
+							metadata.Gender = value
+						case "Warganegara":
+							metadata.Nationality = value
+						case "Negeri":
+							metadata.State = value
+						case "Kategory":
+							metadata.Category = value
+						case "Majikan":
+							metadata.Employer = value
+						case "Jawatan":
+							metadata.Position = value
+						case "Mahkamah":
+							metadata.Court = value
+						case "Hakim":
+							metadata.Judge = value
+						case "Timbalan Pendakwa Raya / Pegawai Pendakwa":
+							metadata.Officer = value
+						case "Peguam Bela":
+							metadata.DefenseAttorney = value
+						case "Sabitan Lampau":
+							metadata.PastConvictions = value
+						case "Tarikh Jatuh Hukuman":
+							metadata.SentencingDate = value
+						case "Rayuan":
+							metadata.Appeal = value
 						}
 					})
 				}
-
-				e.DOM.Find("table.table-bordered").Eq(0).Find("tbody > tr").Eq(0).Find("td").Each(func(i int, s *goquery.Selection) {
-					value := strings.TrimSpace(s.Text())
-					switch i {
-					case 1:
-						metadata.Injunction.Number = value
-					case 2:
-						metadata.Injunction.Description = value
-					case 3:
-						metadata.Injunction.Rule = value
-					}
-				})
 
 				var details []scraperModels.ProcurementDetail
 				e.DOM.Find("table.table-bordered").Eq(0).Find("tbody > tr").Each(func(i int, s *goquery.Selection) {
@@ -168,21 +215,21 @@ func scrapeUrls(urlFrontiers []repository.UrlFrontier) ([]repository.Extraction,
 						value := strings.TrimSpace(s.Text())
 						switch i {
 						case 1:
-							detail.TenderID = value
+							detail.Number = value
+						case 2:
+							detail.Summary = value
 						case 3:
-							detail.PackageName = value
+							detail.Offenses = value
 						case 4:
-							detail.EstimatedPrice = strings.Replace(value, "\n", " ", 100)
+							detail.Punishments = strings.Replace(value, "\n", " ", 100)
 						}
 					})
 					details = append(details, detail)
 				})
 
 				metadata.ProcurementDetails = details
-				metadata.Title = name
-				metadata.Injunction.Number = number
 
-				extractionID := sha256.Sum256(fmt.Appendf(nil, "%s-%s", id, time.Now().String()))
+				extractionID := sha256.Sum256(fmt.Appendf(nil, "%s-%d-%s", id, page, time.Now().String()))
 				extraction := repository.Extraction{
 					ID:            hex.EncodeToString(extractionID[:]),
 					UrlFrontierID: urlFrontiers[idx].ID,

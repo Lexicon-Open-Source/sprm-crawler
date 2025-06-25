@@ -2,33 +2,27 @@ package models
 
 type Metadata struct {
 	ID                 string              `json:"id"`
-	Title              string              `json:"title"`
-	Address            string              `json:"address"`
-	City               string              `json:"city"`
-	Status             string              `json:"status"`
-	NPWP               string              `json:"npwp"`
-	Province           string              `json:"province"`
-	Injunction         Injunction          `json:"injunction"`
+	Accused            string              `json:"accused"`
+	IDNumber           string              `json:"id_number"`
+	Gender             string              `json:"gender"`
+	Nationality        string              `json:"nationality"`
+	State              string              `json:"state"`
+	Category           string              `json:"category"`
+	Employer           string              `json:"employer"`
+	Position           string              `json:"position"`
+	Court              string              `json:"court"`
+	Judge              string              `json:"judge"`
+	Officer            string              `json:"officer"`
+	DefenseAttorney    string              `json:"defense_attorney"`
+	PastConvictions    string              `json:"past_convictions"`
+	SentencingDate     string              `json:"sentencing_date"`
+	Appeal             string              `json:"appeal"`
 	ProcurementDetails []ProcurementDetail `json:"procurement_details"`
 }
 
-type Injunction struct {
-	Number        string `json:"number"`
-	Rule          string `json:"rule"`
-	Description   string `json:"description"`
-	StartDate     string `json:"start_date"`
-	EndDate       string `json:"end_date"`
-	PublishedDate string `json:"published_date"`
-	Duration      string `json:"duration"`
-}
-
 type ProcurementDetail struct {
-	TenderID        string `json:"tender_id"`
-	PackageName     string `json:"package_name"`
-	ProcurementType string `json:"procurement_type"`
-	Ceiling         string `json:"ceiling"`
-	Unit            string `json:"unit"`
-	FiscalYear      string `json:"fiscal_year"`
-	InstitutionArea string `json:"institution_area"`
-	EstimatedPrice  string `json:"estimated_price"`
+	Number      string `json:"number"`
+	Summary     string `json:"summary"`
+	Offenses    string `json:"offenses"`
+	Punishments string `json:"punishments"`
 }
