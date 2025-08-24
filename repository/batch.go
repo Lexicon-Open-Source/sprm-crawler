@@ -10,9 +10,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	crawlerModel "sprm-crawler/crawler/models"
 	scraperModel "sprm-crawler/scraper/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var (
@@ -174,7 +175,7 @@ type UpsertUrlFrontiersParams struct {
 	Url       string
 	Crawler   string
 	Status    int16
-	Metadata  crawlerModel.UrlFrontierMetadata
+	Metadata  *crawlerModel.UrlFrontierMetadata
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

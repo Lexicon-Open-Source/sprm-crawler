@@ -31,7 +31,7 @@ type UrlFrontier struct {
 	Crawler string
 	// 0: Pending, 1: Crawled, 2: Changed
 	Status    int16
-	Metadata  crawlerModel.UrlFrontierMetadata
+	Metadata  *crawlerModel.UrlFrontierMetadata
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
